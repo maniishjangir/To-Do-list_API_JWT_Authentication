@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb:/127.0.0.1/TO_DO_LIST_API', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb+srv://manishjangir05012001:12345@cluster0.r5nvte5.mongodb.net/', { useNewUrlParser: true, useUnifiedTopology: true });
 
+//
 const db = mongoose.connection;
 
 console.log("Inside the mongoose.js file");

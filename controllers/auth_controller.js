@@ -1,34 +1,52 @@
 const User = require('../models/User');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const {secret} = require('../config/constants');
+const { secret } = require('../config/constants');
 
-exports.register = async (req, res) => {
-    try{
-        const {username, password} = req.body;
+const register = async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-        // we will check if the username already exist or not
-        const existingUser = await User.findOne({username});
-        if(existingUser){
-            return res.status(409).json({error: 'Username Already exists'});
-        }
+    // Create a new user with the plain text password
+    const user = new User({
+      username: username,
+      password, // Store the plain text password directly (not recommended)
+    });
 
-        // Hash the Password
-        const hashedPassword = await bcrypt.hash(password);
+    // Save the user to the database
+    await user.save();
 
-        // Now we will create a new user 
-        const user = new User({
-            username,
-            password: hashedPassword,
-        });
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Failed to register user:', error);
+    res.status(500).json({ error: 'An error occurred while registering the user' });
+  }
+};
 
-        // Now we will save users data to the database
-        await user.save();
-        res.status(201).json({message: "User Registered Successfully"});
+module.exports = {
+  register,
+};
 
-    }catch(error){
-        console.error('Failed to register user:', error);
-        res.status(500).json({ error: 'An error occurred' });
+module.exports.login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // we need to find the user in our database
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid Username/Password' });
     }
+
+    // verify password
+    if (password !== user.password) {
+      return res.status(401).json({ error: 'Invalid Username/Password' });
+    }
+
+    // Generate JWT Tokens here
+    const token = jwt.sign({ userId: user._id }, secret, { expiresIn: '1h' });
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error('Failed to login:', error);
+    res.status(500).json({ error: 'An error occurred while logging in' });
+  }
 };
