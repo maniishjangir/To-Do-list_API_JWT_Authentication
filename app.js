@@ -1,4 +1,5 @@
 const express = require('express');
+const app = express();
 const port = 8000;
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
@@ -7,7 +8,14 @@ const taskRoutes = require('./routes/taskRoutes');
 // we need to import the mongoose file from the config folder to save the data to our database
 const db = require('./config/mongoose');
 
-const app = express();
+// Middleware use
+app.use(bodyParser.json());
+
+// routes for authorization and tasks files and actions
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', authRoutes);
+
+
 
 app.listen(port, (err) => {
         if(err){
